@@ -49,12 +49,12 @@ const Calender = () => {
   const [month, setMonth] = React.useState(currentDate.getMonth());
   const [year, setYear] = React.useState(currentDate.getFullYear());
   const [showYears, setShowYears] = React.useState(false);
-  const [selections, setSelections] = React.useState({
-    startDate: currentDate,
-    endDate: null,
-  });
-  const first = getFirstDayOfMonth(focusedDate, month, year);
 
+  const first = getFirstDayOfMonth(focusedDate, month, year);
+  const [selections, setSelections] = React.useState({
+    start: currentDate,
+    end: null,
+  });
   //   handlers
   const prevMonthHandler = (e) => {
     if (month === 0) {
@@ -78,6 +78,9 @@ const Calender = () => {
   const yearsList = yearsData.Sheet1.map((el) => +el["1980"]);
   const clickDateHandler = (e) => {
     const selectedDate = new Date(e.currentTarget.getAttribute("id"));
+    let temp = { ...selections };
+    temp.start = selectedDate;
+    setSelections(temp);
     setMonth(selectedDate.getMonth());
   };
   return (
@@ -136,13 +139,22 @@ const Calender = () => {
                 days: dateIndex,
                 weeks: weekIndex,
               });
+
+              const isCurrent =
+                selections.start &&
+                dateToRender.getDate() === selections.start.getDate();
               return (
                 <DateComp
+                  isCurrent={isCurrent}
                   id={dateToRender}
                   key={dateIndex}
                   date={dateToRender.getDate()}
                   isActive={dateToRender.getMonth() === month}
                   onClick={clickDateHandler}
+                  //   isCurrent={
+                  //     (selections.start && 20 === selections.start.getDate()) ||
+                  //     (selections.end && 20 === selections.end.getDate())
+                  //   }
                 />
               );
             })}
