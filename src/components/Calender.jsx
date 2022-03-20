@@ -21,6 +21,8 @@ import sub from "date-fns/sub";
 import add from "date-fns/add";
 import setDate from "date-fns/setDate";
 import compareAsc from "date-fns/compareAsc";
+import isLastDayOfMonth from "date-fns/isLastDayOfMonth";
+import isFirstDayOfMonth from "date-fns/isFirstDayOfMonth";
 
 const months = [
   "January",
@@ -167,20 +169,22 @@ const Calender = () => {
                   dateToRender.getMonth() === selections.end.getMonth() &&
                   dateToRender.getFullYear() === selections.end.getFullYear());
               let rangeType = "";
-              /**dateToRender.getDate() === selections.start.getDate() && dateToRender.getMonth() === selections.start.getMonth() */
               if (selections.end) {
                 if (
                   (compareAsc(dateToRender, selections.start) === 0 &&
                     dateIndex !== 6) ||
                   (dateIndex === 0 &&
                     compareAsc(dateToRender, selections.start) === 1 &&
-                    compareAsc(dateToRender, selections.end) === -1)
+                    compareAsc(dateToRender, selections.end) === -1) ||
+                  (compareAsc(dateToRender, selections.start) === 1 &&
+                    compareAsc(dateToRender, selections.end) === -1 &&
+                    isFirstDayOfMonth(dateToRender))
                 ) {
                   rangeType = "start";
                 }
                 if (
                   (compareAsc(dateToRender, selections.end) === 0 &&
-                    dateIndex !== 6) ||
+                    dateIndex !== 0) ||
                   (dateIndex === 6 &&
                     compareAsc(dateToRender, selections.start) === 1 &&
                     compareAsc(dateToRender, selections.end) === -1)
