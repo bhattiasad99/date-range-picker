@@ -20,6 +20,7 @@ import DateComp from "./Date";
 import sub from "date-fns/sub";
 import add from "date-fns/add";
 import setDate from "date-fns/setDate";
+import compareAsc from "date-fns/compareAsc";
 
 const months = [
   "January",
@@ -45,12 +46,11 @@ const Calender = () => {
   const currentDate = new Date();
 
   //   states
-  const [focusedDate, setFocusedDate] = React.useState(currentDate.getDate());
   const [month, setMonth] = React.useState(currentDate.getMonth());
   const [year, setYear] = React.useState(currentDate.getFullYear());
   const [showYears, setShowYears] = React.useState(false);
 
-  const first = getFirstDayOfMonth(focusedDate, month, year);
+  const first = getFirstDayOfMonth(currentDate.getDate(), month, year);
   const [selections, setSelections] = React.useState({
     start: currentDate,
     end: null,
@@ -79,10 +79,26 @@ const Calender = () => {
   const clickDateHandler = (e) => {
     const selectedDate = new Date(e.currentTarget.getAttribute("id"));
     let temp = { ...selections };
-    temp.start = selectedDate;
+    if (!selections.end) {
+      temp.end = selectedDate;
+    } else if (selections.end) {
+      temp.start = selectedDate;
+      temp.end = null;
+    }
+
     setSelections(temp);
     setMonth(selectedDate.getMonth());
   };
+
+  React.useEffect(() => {
+    let temp = { ...selections };
+    if (temp.end && temp.start > temp.end) {
+      const tempExtra = temp.end;
+      temp.end = temp.start;
+      temp.start = tempExtra;
+      setSelections(temp);
+    }
+  }, [selections]);
   return (
     <Wrapper>
       <IconButton sx={{ position: "absolute", top: "10px", right: "10px" }}>
@@ -141,85 +157,61 @@ const Calender = () => {
               });
 
               const isCurrent =
-                selections.start &&
-                dateToRender.getDate() === selections.start.getDate();
+                (selections.start &&
+                  dateToRender.getDate() === selections.start.getDate() &&
+                  dateToRender.getMonth() === selections.start.getMonth() &&
+                  dateToRender.getFullYear() ===
+                    selections.start.getFullYear()) ||
+                (selections.end &&
+                  dateToRender.getDate() === selections.end.getDate() &&
+                  dateToRender.getMonth() === selections.end.getMonth() &&
+                  dateToRender.getFullYear() === selections.end.getFullYear());
+              let rangeType = "";
+              /**dateToRender.getDate() === selections.start.getDate() && dateToRender.getMonth() === selections.start.getMonth() */
+              if (selections.end) {
+                if (
+                  (compareAsc(dateToRender, selections.start) === 0 &&
+                    dateIndex !== 6) ||
+                  (dateIndex === 0 &&
+                    compareAsc(dateToRender, selections.start) === 1 &&
+                    compareAsc(dateToRender, selections.end) === -1)
+                ) {
+                  rangeType = "start";
+                }
+                if (
+                  (compareAsc(dateToRender, selections.end) === 0 &&
+                    dateIndex !== 6) ||
+                  (dateIndex === 6 &&
+                    compareAsc(dateToRender, selections.start) === 1 &&
+                    compareAsc(dateToRender, selections.end) === -1)
+                ) {
+                  rangeType = "end";
+                }
+                if (
+                  compareAsc(dateToRender, selections.start) === 1 &&
+                  compareAsc(dateToRender, selections.end) === -1 &&
+                  dateIndex !== 0 &&
+                  dateIndex !== 6
+                ) {
+                  rangeType = "middle";
+                }
+              }
               return (
                 <DateComp
+                  rangeType={rangeType}
                   isCurrent={isCurrent}
                   id={dateToRender}
                   key={dateIndex}
                   date={dateToRender.getDate()}
                   isActive={dateToRender.getMonth() === month}
                   onClick={clickDateHandler}
-                  //   isCurrent={
-                  //     (selections.start && 20 === selections.start.getDate()) ||
-                  //     (selections.end && 20 === selections.end.getDate())
-                  //   }
                 />
               );
             })}
           </Week>
         );
       })}
-      {/* <Week>
-        <DateComp date={27} isActive={false} />
-        <DateComp date={28} isActive={false} />
-        <DateComp date={1} />
-        <DateComp date={2} />
-        <DateComp date={3} />
-        <DateComp date={4} />
-        <DateComp date={5} />
-      </Week>
-      <Week>
-        <DateComp date={6} />
-        <DateComp date={7} />
-        <DateComp date={8} />
-        <DateComp date={9} />
-        <DateComp date={10} />
-        <DateComp date={11} />
-        <DateComp date={12} />
-      </Week>
-      <Week>
-        <DateComp date={13} />
-        <DateComp date={14} />
-        <DateComp date={15} />
-        <DateComp date={16} />
-        <DateComp date={17} />
-        <DateComp date={18} />
-        <DateComp date={19} />
-      </Week>
-      <Week>
-        <DateComp
-          date={20}
-          rangeType="start"
-          isCurrent={
-            (selections.startDate && 20 === selections.startDate.getDate()) ||
-            (selections.endDate && 20 === selections.endDate.getDate())
-          }
-        />
-        <DateComp date={21} rangeType="middle" />
-        <DateComp date={22} rangeType="middle" />
-        <DateComp date={23} rangeType="middle" />
-        <DateComp date={24} rangeType="middle" />
-        <DateComp date={25} rangeType="middle" />
-        <DateComp date={26} rangeType="end" />
-      </Week>
-      <Week>
-        <DateComp date={27} rangeType="start" />
-        <DateComp date={28} rangeType="middle" />
-        <DateComp
-          date={29}
-          rangeType="end"
-          isCurrent={
-            (selections.startDate && 29 === selections.startDate.getDate()) ||
-            (selections.endDate && 29 === selections.endDate.getDate())
-          }
-        />
-        <DateComp date={30} />
-        <DateComp date={31} />
-        <DateComp isActive={false} date={1} />
-        <DateComp isActive={false} date={2} />
-      </Week> */}
+
       <StyledButton variant="contained">Save Date</StyledButton>
     </Wrapper>
   );
