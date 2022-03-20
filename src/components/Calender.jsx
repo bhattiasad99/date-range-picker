@@ -58,6 +58,7 @@ const Calender = () => {
   //   handlers
   const prevMonthHandler = (e) => {
     if (month === 0) {
+      setYear((prevState) => prevState - 1);
       return setMonth(11);
     }
     setMonth((prevState) => prevState - 1);
@@ -65,6 +66,7 @@ const Calender = () => {
 
   const nextMonthHandler = (e) => {
     if (month === 11) {
+      setYear((prevState) => prevState + 1);
       return setMonth(0);
     }
     setMonth((prevState) => prevState + 1);
